@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Adoption Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 100px 0;
+            margin-bottom: 50px;
+        }
+        .pet-card {
+            transition: transform 0.3s ease;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        .pet-card:hover {
+            transform: translateY(-10px);
+        }
+        .navbar-brand { font-size: 1.5rem; }
+        /* Badge ko image ke upar dikhane ke liye extra safety layer */
+        .status-badge {
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">🐾 PET ADOPT</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/">Home</a>
+                </li>
+
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link px-3 ms-lg-3 shadow-sm text-white fw-bold" 
+                           href="{% url 'dashboard' %}" 
+                           style="background-color: #0d6efd; border-radius: 8px; border: 2px solid #ffffff33;">
+                            📊 My Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link px-3 ms-lg-2 shadow-sm text-dark fw-bold" 
+                           href="{% url 'upload_pet' %}" 
+                           style="background-color: #ffc107; border-radius: 8px; border: none;">
+                            ➕ Post a Pet
+                        </a>
+                    </li>
+                    <li class="nav-item ms-lg-3 text-white fw-bold small">
+                        Hi, {{ user.username }}!
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white ms-lg-2" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item ms-lg-3">
+                        <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
+                    </li>
+                    <li class="nav-item ms-lg-2">
+                        <a class="nav-link btn btn-warning text-dark fw-bold px-3 shadow-sm" href="{% url 'register' %}">Sign Up 🚀</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-3 fw-bold text-white">Find Your New Best Friend</h1>
+        <p class="lead mb-4">Har bezubaan ko ek ghar ki talaash hai. Aaj hi ek pet adopt karein!</p>
+        <a href="#pets-grid" class="btn btn-warning btn-lg fw-bold px-5 rounded-pill shadow">Browse Pets</a>
+    </div>
+</div>
+
+<div class="container" id="pets-grid">
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="fw-bold">Available Pets for Adoption</h2>
+            <div class="bg-primary mx-auto mb-4" style="height: 4px; width: 60px;"></div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for pet in pets %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card pet-card h-100 shadow border-0 position-relative">
+                
+                <div class="position-absolute top-0 start-0 m-3 status-badge">
+                    {% if pet.is_adopted %}
+                        <span class="badge bg-success shadow-sm p-2 px-3 fw-bold rounded-pill">Adopted 🎉</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark shadow-sm p-2 px-3 fw-bold rounded-pill">Available</span>
+                    {% endif %}
+                </div>
+                {% if pet.image %}
+                <img src="{{ pet.image.url }}" class="card-img-top" style="height: 250px; object-fit: cover;" alt="{{ pet.name }}">
+                {% else %}
+                <img src="https://via.placeholder.com/400x250?text=No+Image+Available" class="card-img-top" style="height: 250px; object-fit: cover;">
+                {% endif %}
+                
+                <div class="card-body text-center">
+                    <span class="badge bg-info text-dark mb-2">{{ pet.pet_type }}</span>
+                    <h4 class="card-title fw-bold text-primary">{{ pet.name }}</h4>
+                    <p class="text-muted mb-3"><i class="bi bi-tag"></i> {{ pet.breed }} | {{ pet.age }} Years Old</p>
+                    <p class="card-text text-secondary small mb-4">{{ pet.description|truncatewords:10 }}</p>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'pet_detail' pet.id %}" 
+                           class="btn {% if pet.is_adopted %}btn-outline-secondary{% else %}btn-primary{% endif %} fw-bold py-2 rounded-pill shadow-sm">
+                            {% if pet.is_adopted %}View Story 🐾{% else %}View Details & Contact 🐾{% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="bg-white p-5 rounded shadow-sm border">
+                <h4 class="text-muted">"Abhi koi pet available nahi hai."</h4>
+                <p class="mb-4">Naye pets add karne ke liye 'Post a Pet' par click karein.</p>
+                <a href="{% url 'upload_pet' %}" class="btn btn-primary px-4">Post a Pet Now</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<footer class="bg-dark text-white text-center py-4 mt-5">
+    <div class="container">
+        <p class="mb-0">© 2026 Pet Adopt Platform | Built with 💙 and Django</p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

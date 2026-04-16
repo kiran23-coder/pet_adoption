@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow border-0 p-4">
+                <h2 class="text-center fw-bold text-primary mb-4">Post a Pet for Adoption 🐾</h2>
+                <form method="POST" enctype="multipart/form-data"> {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">{{ field.label }}</label>
+                            {{ field }}
+                        </div>
+                    {% endfor %}
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold">List My Pet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input, select, textarea { 
+        width: 100%; border-radius: 8px; border: 1px solid #ddd; padding: 10px; 
+    }
+</style>
+{% endblock %}

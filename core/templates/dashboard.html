@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-primary">My Dashboard 📊</h2>
+            <p class="text-muted">Welcome back, {{ user.username }}! Manage your pet listings here.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'upload_pet' %}" class="btn btn-warning fw-bold px-4 shadow-sm">+ Post a New Pet</a>
+        </div>
+    </div>
+
+    <div class="row mb-5 text-center">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 bg-primary text-white p-3 rounded-4">
+                <h3 class="fw-bold">{{ total_uploads }}</h3>
+                <small class="text-uppercase small">Total Uploads</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 bg-info text-white p-3 rounded-4">
+                <h3 class="fw-bold">{{ active_listings }}</h3>
+                <small class="text-uppercase small">Active Listings</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 bg-success text-white p-3 rounded-4">
+                <h3 class="fw-bold">{{ adopted_count }}</h3>
+                <small class="text-uppercase small">Successfully Adopted</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Pet Details</th>
+                        <th>Breed</th>
+                        <th>Status</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pet in user_pets %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="d-flex align-items-center">
+                                {% if pet.image %}
+                                    <img src="{{ pet.image.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #eee;">
+                                {% else %}
+                                    <div class="rounded-circle bg-secondary me-3" style="width: 50px; height: 50px;"></div>
+                                {% endif %}
+                                <div>
+                                    <h6 class="mb-0 fw-bold">{{ pet.name }}</h6>
+                                    <small class="text-muted">{{ pet.pet_type }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ pet.breed }}</td>
+                        <td>
+                            {% if pet.is_adopted %}
+                                <span class="badge bg-success-soft text-success border border-success px-3 rounded-pill">Adopted ✅</span>
+                            {% else %}
+                                <span class="badge bg-info-soft text-primary border border-primary px-3 rounded-pill">Available</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            {% if not pet.is_adopted %}
+                                <a href="{% url 'mark_as_adopted' pet.id %}" class="btn btn-success btn-sm fw-bold me-2 px-3 rounded-pill shadow-sm">
+                                    Mark Adopted ✅
+                                </a>
+                                <a href="{% url 'edit_pet' pet.id %}" class="btn btn-outline-primary btn-sm me-2 rounded-circle" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            {% else %}
+                                <span class="text-success small fw-bold me-3"><i class="bi bi-check-all"></i> Mission Completed</span>
+                            {% endif %}
+                            
+                            <a href="{% url 'delete_pet' pet.id %}" class="btn btn-outline-danger btn-sm rounded-circle" title="Delete">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <div class="py-4">
+                                <i class="bi bi-emoji-frown display-4 text-muted"></i>
+                                <p class="text-muted mt-3">Aapne abhi tak koi pet post nahi kiya hai.</p>
+                                <a href="{% url 'upload_pet' %}" class="btn btn-primary btn-sm mt-2">Post your first pet</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-info-soft { background-color: rgba(13, 202, 240, 0.1); }
+</style>
+{% endblock %}
