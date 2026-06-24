@@ -32,71 +32,152 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4">Pet Details</th>
-                        <th>Breed</th>
-                        <th>Status</th>
-                        <th class="text-end pe-4">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for pet in user_pets %}
-                    <tr>
-                        <td class="ps-4">
-                            <div class="d-flex align-items-center">
-                                {% if pet.image %}
-                                    <img src="{{ pet.image.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #eee;">
-                                {% else %}
-                                    <div class="rounded-circle bg-secondary me-3" style="width: 50px; height: 50px;"></div>
-                                {% endif %}
-                                <div>
-                                    <h6 class="mb-0 fw-bold">{{ pet.name }}</h6>
-                                    <small class="text-muted">{{ pet.pet_type }}</small>
-                                </div>
-                            </div>
-                        </td>
-                        <td>{{ pet.breed }}</td>
-                        <td>
-                            {% if pet.is_adopted %}
-                                <span class="badge bg-success-soft text-success border border-success px-3 rounded-pill">Adopted ✅</span>
-                            {% else %}
-                                <span class="badge bg-info-soft text-primary border border-primary px-3 rounded-pill">Available</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end pe-4">
-                            {% if not pet.is_adopted %}
-                                <a href="{% url 'mark_as_adopted' pet.id %}" class="btn btn-success btn-sm fw-bold me-2 px-3 rounded-pill shadow-sm">
-                                    Mark Adopted ✅
-                                </a>
-                                <a href="{% url 'edit_pet' pet.id %}" class="btn btn-outline-primary btn-sm me-2 rounded-circle" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                            {% else %}
-                                <span class="text-success small fw-bold me-3"><i class="bi bi-check-all"></i> Mission Completed</span>
-                            {% endif %}
-                            
-                            <a href="{% url 'delete_pet' pet.id %}" class="btn btn-outline-danger btn-sm rounded-circle" title="Delete">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="text-center py-5">
-                            <div class="py-4">
-                                <i class="bi bi-emoji-frown display-4 text-muted"></i>
-                                <p class="text-muted mt-3">Aapne abhi tak koi pet post nahi kiya hai.</p>
-                                <a href="{% url 'upload_pet' %}" class="btn btn-primary btn-sm mt-2">Post your first pet</a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active fw-bold" id="uploads-tab" data-bs-toggle="tab" data-bs-target="#uploads" type="button" role="tab">My Uploaded Pets</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button" role="tab">My Adoption Requests</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link fw-bold" id="favorites-tab" data-bs-toggle="tab" data-bs-target="#favorites" type="button" role="tab">Saved Pets ❤️</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="dashboardTabsContent">
+        <!-- My Uploads Tab -->
+        <div class="tab-pane fade show active" id="uploads" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Pet Details</th>
+                                <th>Breed</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pet in user_pets %}
+                            <tr>
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if pet.image %}
+                                            <img src="{{ pet.image.url }}" class="rounded-circle me-3" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid #eee;">
+                                        {% else %}
+                                            <div class="rounded-circle bg-secondary me-3" style="width: 50px; height: 50px;"></div>
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0 fw-bold">{{ pet.name }}</h6>
+                                            <small class="text-muted">{{ pet.pet_type }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ pet.breed }}</td>
+                                <td>
+                                    {% if pet.is_adopted %}
+                                        <span class="badge bg-success-soft text-success border border-success px-3 rounded-pill">Adopted ✅</span>
+                                    {% else %}
+                                        <span class="badge bg-info-soft text-primary border border-primary px-3 rounded-pill">Available</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    {% if not pet.is_adopted %}
+                                        <a href="{% url 'mark_as_adopted' pet.id %}" class="btn btn-success btn-sm fw-bold me-2 px-3 rounded-pill shadow-sm">
+                                            Mark Adopted ✅
+                                        </a>
+                                        <a href="{% url 'edit_pet' pet.id %}" class="btn btn-outline-primary btn-sm me-2 rounded-circle" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                    {% else %}
+                                        <span class="text-success small fw-bold me-3"><i class="bi bi-check-all"></i> Mission Completed</span>
+                                    {% endif %}
+                                    
+                                    <a href="{% url 'delete_pet' pet.id %}" class="btn btn-outline-danger btn-sm rounded-circle" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5">
+                                    <div class="py-4">
+                                        <i class="bi bi-emoji-frown display-4 text-muted"></i>
+                                        <p class="text-muted mt-3">Aapne abhi tak koi pet post nahi kiya hai.</p>
+                                        <a href="{% url 'upload_pet' %}" class="btn btn-primary btn-sm mt-2">Post your first pet</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Adoption Requests Tab -->
+        <div class="tab-pane fade" id="requests" role="tabpanel">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Pet</th>
+                                <th>Date Requested</th>
+                                <th>Status</th>
+                                <th class="text-end pe-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for req in requests %}
+                            <tr>
+                                <td class="ps-4 fw-bold">{{ req.pet.name }} ({{ req.pet.pet_type }})</td>
+                                <td>{{ req.request_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if req.status == 'Pending' %}
+                                        <span class="badge bg-warning text-dark px-3 rounded-pill">Pending</span>
+                                    {% elif req.status == 'Approved' %}
+                                        <span class="badge bg-success px-3 rounded-pill">Approved ✅</span>
+                                    {% else %}
+                                        <span class="badge bg-danger px-3 rounded-pill">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'pet_detail' req.pet.id %}" class="btn btn-sm btn-outline-primary rounded-pill">View Pet</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-5 text-muted">No adoption requests made yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wishlist Tab -->
+        <div class="tab-pane fade" id="favorites" role="tabpanel">
+            <div class="row">
+                {% for fav in favorite_pets %}
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm border-0 rounded-4">
+                        {% if fav.pet.image %}
+                            <img src="{{ fav.pet.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                        {% endif %}
+                        <div class="card-body text-center">
+                            <h5 class="fw-bold">{{ fav.pet.name }}</h5>
+                            <a href="{% url 'pet_detail' fav.pet.id %}" class="btn btn-primary btn-sm rounded-pill px-3 mt-2">View Pet</a>
+                            <a href="{% url 'toggle_favorite' fav.pet.id %}" class="btn btn-outline-danger btn-sm rounded-pill px-3 mt-2"><i class="bi bi-trash"></i> Remove</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5 text-muted">You haven't saved any pets to your wishlist yet.</div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>

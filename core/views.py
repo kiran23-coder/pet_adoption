@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Pet, AdoptionRequest
+from .models import Pet, AdoptionRequest, FavoritePet
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm,AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
@@ -7,13 +8,28 @@ from django.contrib import messages
 from .forms import PetForm
 
 def home(request):
-    # Filter logic
     pet_type = request.GET.get('type')
+    query = request.GET.get('q')
+    
+    pets = Pet.objects.filter(is_adopted=False)
+    
     if pet_type:
-        pets = Pet.objects.filter(pet_type=pet_type, is_adopted=False)
+        pets = pets.filter(pet_type=pet_type)
+        
+    if query:
+        pets = pets.filter(
+            Q(name__icontains=query) | 
+            Q(breed__icontains=query) | 
+            Q(location__icontains=query)
+        )
+        
+    # Check favorites if user is authenticated
+    if request.user.is_authenticated:
+        favorites = FavoritePet.objects.filter(user=request.user).values_list('pet_id', flat=True)
     else:
-        pets = Pet.objects.filter(is_adopted=False)
-    return render(request, 'home.html', {'pets': pets})
+        favorites = []
+        
+    return render(request, 'home.html', {'pets': pets, 'favorites': favorites, 'search_query': query})
 
 @login_required
 def adopt_pet(request, pet_id):
@@ -73,16 +89,8 @@ def update_status(request, req_id, status):
 
 # core/views.py
 
-@login_required
-def dashboard(request):
-    # Sabse pehle saari requests nikaalein jo is user ne ki hain
-    user_requests = AdoptionRequest.objects.filter(user=request.user)
-    
-    # Debugging ke liye terminal mein print karke dekhein
-    print(f"Total requests for {request.user}: {user_requests.count()}")
-    
-    # Dhyaan dein: Yahan 'requests' (key) vahi hona chahiye jo HTML mein {% for req in requests %} hai
-    return render(request, 'dashboard.html', {'requests': user_requests})
+# This first dashboard view definition is removed.
+# It is merged into the second one below.
 
 def register(request):
     if request.method == 'POST':
@@ -117,11 +125,20 @@ def logout_view(request):
 
 def pet_detail(request, pet_id):
     pet = get_object_or_404(Pet, id=pet_id)
-    return render(request, 'pet_detail.html', {'pet': pet})
+    is_favorite = False
+    if request.user.is_authenticated:
+        is_favorite = FavoritePet.objects.filter(user=request.user, pet=pet).exists()
+    return render(request, 'pet_detail.html', {'pet': pet, 'is_favorite': is_favorite})
 @login_required
 def dashboard(request):
     # User ke apne pets
     user_pets = Pet.objects.filter(owner=request.user)
+    
+    # User ki requests
+    user_requests = AdoptionRequest.objects.filter(user=request.user)
+    
+    # User ke favorites
+    favorite_pets = FavoritePet.objects.filter(user=request.user)
     
     # Stats calculate karna
     total_uploads = user_pets.count()
@@ -130,6 +147,8 @@ def dashboard(request):
     
     context = {
         'user_pets': user_pets,
+        'requests': user_requests,
+        'favorite_pets': favorite_pets,
         'total_uploads': total_uploads,
         'active_listings': active_listings,
         'adopted_count': adopted_count,
@@ -163,3 +182,15 @@ def mark_as_adopted(request, pet_id):
     pet.is_adopted = True
     pet.save()
     return redirect('dashboard')
+
+@login_required
+def toggle_favorite(request, pet_id):
+    pet = get_object_or_404(Pet, id=pet_id)
+    favorite, created = FavoritePet.objects.get_or_create(user=request.user, pet=pet)
+    if not created:
+        favorite.delete()
+    return redirect(request.META.get('HTTP_REFERER', 'home'))
+
+def success_stories(request):
+    pets = Pet.objects.filter(is_adopted=True)
+    return render(request, 'success_stories.html', {'pets': pets})
